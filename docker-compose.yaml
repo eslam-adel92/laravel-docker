@@ -1,0 +1,77 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - USERNAME=${app_name}
+        - USER_UID=${USER_UID}
+    image: ${app_name}-app
+    container_name: ${app_name}
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - ./docker-files/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app_network
+    depends_on:
+      - db
+
+  webserver:
+    image: nginx:alpine
+    container_name: ${app_name}_webserver
+    restart: unless-stopped
+    ports:
+      - "${webapp_port}:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker-files/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      
+    networks:
+      - app_network
+  
+  db:
+    image: mysql:8.0
+    container_name: ${app_name}_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${app_name}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD} 
+      MYSQL_USER: ${DB_USER}  
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - app_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+      #    platform: linux/amd64
+    container_name: ${app_name}_phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "${phpmyadmin_port}:80" 
+    environment:
+      PMA_HOST: db 
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      UPLOAD_LIMIT: 1024M
+      MEMORY_LIMIT: 1024M
+      MAX_EXECUTION_TIME: 900
+    volumes:
+      - phpmyadmin_data:/var/lib/phpmyadmin
+    networks:
+      - app_network
+
+
+networks:
+  app_network:
+    driver: bridge
+    name: ${app_name}_network
+
+
+volumes:
+  dbdata:
+    name: ${db_volume}
+  phpmyadmin_data:
+    name: ${phpmyadmin_volume}
