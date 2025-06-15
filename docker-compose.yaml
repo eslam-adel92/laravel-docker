@@ -18,6 +18,24 @@ services:
     depends_on:
       - db
 
+  supervisor:
+    image: ${app_name}-app
+    container_name: ${app_name}
+    restart: unless-stopped
+    working_dir: /var/www/html
+    environment:
+      - USER_UID=${USER_UID}
+      - USERNAME=${app_name}
+    volumes:
+      - .:/var/www/html
+      - ./docker-files/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - app_network
+    depends_on:
+      - db
+      - app
+    command: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+
   webserver:
     image: nginx:alpine
     container_name: ${app_name}_webserver
