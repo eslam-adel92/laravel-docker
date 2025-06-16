@@ -64,6 +64,23 @@ You can find your user ID by running:
 id -u
 ```
 
+## Running Commands from Outside the Container
+
+You can interact with your containers directly from your host machine using Docker Compose commands. Here are some useful examples:
+
+- **List all running containers:**
+  ```sh
+  docker compose --env-file docker-files/.env ps
+  ```
+
+- **Running Laravel Migrations:**
+
+To run Laravel migrations inside the Docker container, use the following command from your project root:
+
+```sh
+docker compose --env-file docker-files/.env exec -it app bash -c "php artisan migrate"
+```
+
 ## Notes
 
 - Make sure the ports you set in `.env` are available on your host machine.
