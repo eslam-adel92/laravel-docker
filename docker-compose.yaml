@@ -24,7 +24,6 @@ services:
     restart: unless-stopped
     working_dir: /var/www/html
     environment:
-      - USER_UID=${USER_UID}
       - USERNAME=${app_name}
     volumes:
       - .:/var/www/html
